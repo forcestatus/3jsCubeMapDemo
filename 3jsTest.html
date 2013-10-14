@@ -1,0 +1,169 @@
+<html>
+    <head>
+		<title>My first Three.js app</title>
+		<!--// here is the 3d object-->
+		<link type="text/css" rel="stylesheet" href="css/stylesheet.css"/>
+		<!--set the cube position on the page and zindex -->
+		<style > canvas { width: 50%; height: 50%; z-index: 5; position: relative; top: -1000; }
+		</style>
+		
+		<!--three JS-->
+	<script src="https://rawgithub.com/mrdoob/three.js/master/build/three.js"></script>
+	
+		<!--this is google maps layer canvaslayer for 3d visualisations-->
+    <title>Hello 2d World</title>
+    <style>
+      html, body, #map-div { margin: 0; padding: 0; height: 100%; z-index: 1; }
+    </style>
+
+    <script src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
+    <script src="../src/CanvasLayer.js"></script>
+
+    <script>
+      var map;
+      var canvasLayer;
+      var context;
+
+      var rectLatLng = new google.maps.LatLng(40, -95);
+      var rectWidth = 6.5;
+
+      function init() {
+        // initialize the map
+        var mapOptions = {
+          zoom: 4,
+          center: new google.maps.LatLng(39.3, -95.8),
+          mapTypeId: google.maps.MapTypeId.ROADMAP,
+          styles: [
+            {
+              featureType: 'water',
+              stylers: [{ color: '#13253e', lightness: 50}]
+            },
+            {
+              featureType: 'poi',
+              stylers: [{visibility: 'off', lightness: 50}]
+            },
+			{
+              featureType: 'road',
+              stylers: [{visibility: 'off'}]
+            },
+			]
+        };
+        var mapDiv = document.getElementById('map-div');
+        map = new google.maps.Map(mapDiv, mapOptions);
+
+        // initialize the canvasLayer
+        var canvasLayerOptions = {
+          map: map,
+          resizeHandler: resize,
+          animate: false,
+          updateHandler: update
+        };
+        canvasLayer = new CanvasLayer(canvasLayerOptions);
+        context = canvasLayer.canvas.getContext('2d');
+      }
+
+      function resize() {
+        // nothing to do here
+      }
+
+      function update() {
+        // clear previous canvas contents
+        var canvasWidth = canvasLayer.canvas.width;
+        var canvasHeight = canvasLayer.canvas.height;
+        context.clearRect(0, 0, canvasWidth, canvasHeight);
+
+        // we like our rectangles green
+        context.fillStyle = 'rgba(0, 255, 0, 1)';
+        
+        /* We need to scale and translate the map for current view.
+         * see https://developers.google.com/maps/documentation/javascript/maptypes#MapCoordinates
+         */
+        var mapProjection = map.getProjection();
+
+        /**
+         * Clear transformation from last update by setting to identity matrix.
+         * Could use context.resetTransform(), but most browsers don't support
+         * it yet.
+         */
+        context.setTransform(1, 0, 0, 1, 0, 0);
+        
+        // scale is just 2^zoom
+        var scale = Math.pow(2, map.zoom);
+        context.scale(scale, scale);
+
+        /* If the map was not translated, the topLeft corner would be 0,0 in
+         * world coordinates. Our translation is just the vector from the
+         * world coordinate of the topLeft corder to 0,0.
+         */
+        var offset = mapProjection.fromLatLngToPoint(canvasLayer.getTopLeft());
+        context.translate(-offset.x, -offset.y);
+
+        // project rectLatLng to world coordinates and draw
+        var worldPoint = mapProjection.fromLatLngToPoint(rectLatLng);
+        context.fillRect(worldPoint.x, worldPoint.y, rectWidth, rectWidth);
+      }
+
+      document.addEventListener('DOMContentLoaded', init, false);
+    </script>
+  </head>
+	<body>
+	<div>
+		<!--Just a bit of heading text to test my .css code-->
+		<p class="testing" style= "position: relative; top:200px; z-index:10;"> Hello </p>
+		
+		<!--biring on google maps-->
+		<div id="map-div">
+
+		
+		</div>
+
+		<script src="https://rawgithub.com/mrdoob/three.js/master/build/three.js" ></script>
+        <script>
+			// Our Javascript will go here.
+        
+            // creating the scene
+			var scene = new THREE.Scene();
+			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / 			window.innerHeight, 0.1, 1000 );
+			//
+			
+	
+			
+            var renderer = new THREE.WebGLRenderer(); 
+            renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+            
+            // creating the geometry
+            //x,y,z cordinates of cubeGeo
+			var geometry = new THREE.CubeGeometry(1,1,1);
+
+			
+            //Color: hex color follows the 0x and remove the # from hex code
+			var material = new THREE.MeshBasicMaterial( { color: 0x600000 } );
+
+            
+            // set variable cube and render it
+			var cube = new THREE.Mesh( geometry, material );
+
+			
+			scene.add( cube );
+
+
+            //moves camera out in z by 5 px
+			camera.position.z = 1.2;
+			
+            
+            //create a loop that causes the renderer to draw the scene 60 times per second 
+			function render() {
+			        requestAnimationFrame(render);
+                    
+                    //rotate the cube 
+                    cube.rotation.x += 0.01;
+                    //cube.rotation.y += 0.01;
+			        renderer.render(scene, camera);
+			}
+			render();
+		</script>
+		
+	</div>
+	</body>
+</html>
